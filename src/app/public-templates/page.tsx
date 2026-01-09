@@ -73,7 +73,6 @@ export default function PublicTemplatesPage() {
         type: template.type,
         cardCategory: template.cardCategory,
         elements: template.elements,
-        steps: template.steps,
         backgroundColor: template.backgroundColor,
         backgroundImage: template.backgroundImage,
         showParticles: template.showParticles,

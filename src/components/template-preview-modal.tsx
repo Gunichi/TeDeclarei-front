@@ -1,17 +1,12 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, JSX } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   X, 
-  ChevronLeft, 
-  ChevronRight, 
   Copy, 
   Heart, 
-  Clock, 
   HelpCircle, 
-  Timer,
-  Check,
   Loader2,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -19,7 +14,7 @@ import {
   Dialog, 
   DialogContent, 
 } from '@/components/ui/dialog';
-import { PublicTemplate, CardElement, TimelineEvent, QuizQuestion, Step } from '@/lib/api';
+import { PublicTemplate, CardElement, TimelineEvent, QuizQuestion } from '@/lib/api';
 import { ParticleBackground } from '@/components/particle-background';
 
 interface TemplatePreviewModalProps {
@@ -53,10 +48,11 @@ export function TemplatePreviewModal({
 
   if (!template) return null;
 
-  const steps = template.steps || [];
-  const currentStep = steps[currentStepIndex] || {
+  // PublicTemplate doesn't have steps, so we use the template's direct properties
+  const currentStep = {
     elements: template.elements || [],
     backgroundColor: template.backgroundColor,
+    backgroundImage: template.backgroundImage,
     showParticles: template.showParticles,
     particleType: template.particleType,
   };
@@ -140,9 +136,7 @@ export function TemplatePreviewModal({
               fontSize: element.style.fontSize,
             }}
             onClick={() => {
-              if (element.buttonProps?.action === 'next' && currentStepIndex < steps.length - 1) {
-                setCurrentStepIndex(currentStepIndex + 1);
-              }
+              // Button click handler - no steps navigation for PublicTemplate preview
             }}
           >
             {element.buttonProps?.text || 'Botão'}
@@ -230,41 +224,6 @@ export function TemplatePreviewModal({
       <div className="absolute inset-0">
         {(currentStep.elements || []).map(renderElement)}
       </div>
-
-      {/* Step navigation */}
-      {steps.length > 1 && (
-        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-4">
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={() => setCurrentStepIndex(Math.max(0, currentStepIndex - 1))}
-            disabled={currentStepIndex === 0}
-            className="rounded-full"
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
-          <div className="flex gap-2">
-            {steps.map((_, idx) => (
-              <button
-                key={idx}
-                onClick={() => setCurrentStepIndex(idx)}
-                className={`w-2 h-2 rounded-full transition-all ${
-                  idx === currentStepIndex ? 'bg-white w-6' : 'bg-white/50'
-                }`}
-              />
-            ))}
-          </div>
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={() => setCurrentStepIndex(Math.min(steps.length - 1, currentStepIndex + 1))}
-            disabled={currentStepIndex === steps.length - 1}
-            className="rounded-full"
-          >
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-        </div>
-      )}
     </div>
   );
 
@@ -567,7 +526,7 @@ export function TemplatePreviewModal({
                   <div className="absolute inset-0 bg-white rounded-lg shadow-2xl" />
                   <div 
                     className="absolute top-0 left-0 right-0 h-0 border-l-[160px] border-r-[160px] border-t-[112px] border-l-transparent border-r-transparent"
-                    style={{ borderTopColor: letterData?.paperColor || '#fef3c7' }}
+                    style={{ borderTopColor: '#fef3c7' }}
                   />
                   {/* Seal */}
                   <div 
@@ -585,7 +544,7 @@ export function TemplatePreviewModal({
                 initial={{ scale: 0.5, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 className="bg-white/95 backdrop-blur rounded-lg p-8 max-w-lg shadow-2xl max-h-[80%] overflow-y-auto"
-                style={{ backgroundColor: letterData?.paperColor || '#fffef0' }}
+                style={{ backgroundColor: '#fffef0' }}
               >
                 <p className="text-gray-600 mb-4">Para: {letterData?.to || 'Meu amor'}</p>
                 <div className="whitespace-pre-wrap text-gray-800 mb-6 font-serif">
@@ -630,7 +589,7 @@ export function TemplatePreviewModal({
             animate={{ y: 0, opacity: 1 }}
             className="w-full max-w-lg rounded-lg shadow-2xl p-8 relative"
             style={{ 
-              backgroundColor: letterData?.paperColor || '#fffef0',
+              backgroundColor: '#fffef0',
               backgroundImage: 'repeating-linear-gradient(transparent, transparent 27px, #e5e5e5 27px, #e5e5e5 28px)',
             }}
           >
@@ -645,7 +604,7 @@ export function TemplatePreviewModal({
             
             <div 
               className="whitespace-pre-wrap text-gray-800 mb-6"
-              style={{ fontFamily: letterData?.fontStyle === 'cursive' ? 'Georgia, serif' : 'inherit' }}
+              style={{ fontFamily: 'Georgia, serif' }}
             >
               {letterData?.content || 'Sua mensagem aqui...'}
             </div>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 import {
@@ -45,7 +45,7 @@ const HANDWRITING_FONTS = [
   { name: 'Casual', value: '"Segoe UI", sans-serif' },
 ];
 
-export default function CartaPage() {
+function CartaPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const templateId = searchParams.get('id');
@@ -651,6 +651,14 @@ function LetterPreview({
         ))}
       </div>
     </div>
+  );
+}
+
+export default function CartaPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-pink-500" /></div>}>
+      <CartaPageContent />
+    </Suspense>
   );
 }
 

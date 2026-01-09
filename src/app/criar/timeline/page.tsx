@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -33,7 +33,7 @@ const GRADIENT_BACKGROUNDS = [
   { name: 'Night', value: 'linear-gradient(135deg, #0c3483 0%, #a2b6df 100%)' },
 ];
 
-export default function TimelinePage() {
+function TimelinePageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const templateId = searchParams.get('id');
@@ -496,6 +496,14 @@ function TimelinePreview({
         ))}
       </div>
     </div>
+  );
+}
+
+export default function TimelinePage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-pink-500" /></div>}>
+      <TimelinePageContent />
+    </Suspense>
   );
 }
 

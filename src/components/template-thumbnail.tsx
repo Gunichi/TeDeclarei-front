@@ -14,7 +14,7 @@ interface TemplateThumbnailProps {
 export function TemplateThumbnail({ template, className = '' }: TemplateThumbnailProps) {
   // Render card type thumbnail
   const renderCardThumbnail = () => {
-    const elements = template.elements || template.steps?.[0]?.elements || [];
+    const elements = template.elements || [];
     
     return (
       <div className="w-full h-full relative overflow-hidden">
@@ -91,17 +91,6 @@ export function TemplateThumbnail({ template, className = '' }: TemplateThumbnai
           )}
         </div>
         
-        {/* Steps indicator */}
-        {template.steps && template.steps.length > 1 && (
-          <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
-            {template.steps.slice(0, 5).map((_, idx) => (
-              <div 
-                key={idx} 
-                className={`w-1.5 h-1.5 rounded-full ${idx === 0 ? 'bg-white' : 'bg-white/50'}`}
-              />
-            ))}
-          </div>
-        )}
       </div>
     );
   };
@@ -191,10 +180,10 @@ export function TemplateThumbnail({ template, className = '' }: TemplateThumbnai
         <div className="absolute inset-0 flex flex-col items-center justify-center p-3">
           <Timer className="w-6 h-6 text-white mb-1" />
           <p className="text-white text-[10px] font-bold">
-            {template.counterData?.count || '365'}
+            365
           </p>
           <p className="text-white/80 text-[7px] text-center">
-            {template.counterData?.label || 'dias juntos'}
+            dias juntos
           </p>
           <div className="flex gap-1 mt-2">
             {['❤️', '💕', '✨'].map((e, i) => (
@@ -270,7 +259,7 @@ export function TemplateThumbnail({ template, className = '' }: TemplateThumbnai
             <div className="absolute inset-0 bg-white rounded-sm shadow-lg" />
             <div 
               className="absolute top-0 left-0 right-0 h-0 border-l-[40px] border-r-[40px] border-t-[28px] border-l-transparent border-r-transparent"
-              style={{ borderTopColor: template.letterData?.paperColor || '#fef3c7' }}
+              style={{ borderTopColor: '#fef3c7' }}
             />
             {/* Heart seal */}
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center shadow">
@@ -311,7 +300,7 @@ export function TemplateThumbnail({ template, className = '' }: TemplateThumbnai
           <div 
             className="flex-1 rounded shadow-lg p-2 relative overflow-hidden"
             style={{ 
-              backgroundColor: template.letterData?.paperColor || '#fffef0',
+              backgroundColor: '#fffef0',
               backgroundImage: 'repeating-linear-gradient(transparent, transparent 11px, #e5e5e5 11px, #e5e5e5 12px)'
             }}
           >

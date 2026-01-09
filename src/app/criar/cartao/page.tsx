@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { motion, PanInfo } from 'framer-motion';
 import { HexColorPicker } from 'react-colorful';
@@ -548,7 +548,7 @@ function DraggableElement({ element, isSelected, onDragEnd, onClick, containerRe
   );
 }
 
-export default function CreateCardPage() {
+function CreateCardPageContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const templateId = searchParams.get('id');
@@ -2101,6 +2101,14 @@ export default function CreateCardPage() {
         </DialogContent>
       </Dialog>
     </div>
+  );
+}
+
+export default function CreateCardPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-pink-500" /></div>}>
+      <CreateCardPageContent />
+    </Suspense>
   );
 }
 

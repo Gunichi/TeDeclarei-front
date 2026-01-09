@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, Suspense } from 'react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { motion, PanInfo } from 'framer-motion';
 import { HexColorPicker } from 'react-colorful';
@@ -168,7 +168,7 @@ interface StepEditorProps {
   isActive: boolean;
 }
 
-export default function CreateTemplatePage() {
+function CreateTemplatePageContent() {
   const params = useParams();
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -1418,5 +1418,13 @@ export default function CreateTemplatePage() {
         </DialogContent>
       </Dialog>
     </div>
+  );
+}
+
+export default function CreateTemplatePage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-pink-500" /></div>}>
+      <CreateTemplatePageContent />
+    </Suspense>
   );
 }

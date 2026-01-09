@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -44,7 +44,7 @@ const GRADIENT_BACKGROUNDS = [
   { name: 'Night', value: 'linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%)' },
 ];
 
-export default function QuizPage() {
+function QuizPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const templateId = searchParams.get('id');
@@ -625,6 +625,14 @@ function QuizPreview({
         )}
       </div>
     </div>
+  );
+}
+
+export default function QuizPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-pink-500" /></div>}>
+      <QuizPageContent />
+    </Suspense>
   );
 }
 
