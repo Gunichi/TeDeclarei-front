@@ -10,10 +10,12 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/contexts/auth-context';
+import { useToast } from '@/hooks/use-toast';
 
 export default function AuthPage() {
   const router = useRouter();
   const { login, register } = useAuth();
+  const { toast } = useToast();
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -49,6 +51,11 @@ export default function AuthPage() {
 
     try {
       await register(registerEmail, registerPassword, registerName);
+      toast({
+        variant: 'success',
+        title: '🎉 Conta criada com sucesso!',
+        description: 'Seja bem-vindo(a) ao Te Declarei. Agora você pode criar declarações incríveis!',
+      });
       router.push('/templates');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao criar conta');
