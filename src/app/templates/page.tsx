@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   Heart,
@@ -19,7 +19,10 @@ import {
   ImageIcon,
   Mail,
   PenTool,
+  QrCode,
+  Download,
 } from 'lucide-react';
+import { QRCodeSVG } from 'qrcode.react';
 import { motion } from 'framer-motion';
 import { Navbar } from '@/components/navbar';
 import { Footer } from '@/components/footer';
@@ -52,6 +55,9 @@ export default function TemplatesPage() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [templateToDelete, setTemplateToDelete] = useState<string | null>(null);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [shareDialogOpen, setShareDialogOpen] = useState(false);
+  const [templateToShare, setTemplateToShare] = useState<Template | null>(null);
+  const qrCodeRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -113,9 +119,102 @@ export default function TemplatesPage() {
   };
 
   const handleShare = (template: Template) => {
-    const shareUrl = `${window.location.origin}/view/${template.shareToken}`;
-    navigator.clipboard.writeText(shareUrl);
-    alert('Link copiado para a área de transferência!');
+    setTemplateToShare(template);
+    setShareDialogOpen(true);
+  };
+
+  const handleCopyUrl = async (url: string) => {
+    try {
+      await navigator.clipboard.writeText(url);
+      alert('Link copiado para a área de transferência!');
+    } catch (err) {
+      console.error('Erro ao copiar URL:', err);
+      alert('Erro ao copiar link');
+    }
+  };
+
+  const handleDownloadQRCode = (url: string, templateTitle: string) => {
+    try {
+      // Find the QR Code SVG element using ref or querySelector as fallback
+      const qrCodeElement = qrCodeRef.current || document.querySelector('[data-qr-code]') as HTMLElement;
+      if (!qrCodeElement) {
+        alert('Erro ao encontrar QR Code');
+        return;
+      }
+
+      const svg = qrCodeElement.querySelector('svg');
+      if (!svg) {
+        alert('Erro ao encontrar SVG do QR Code');
+        return;
+      }
+
+      // Clone the SVG to avoid modifying the original
+      const clonedSvg = svg.cloneNode(true) as SVGElement;
+      
+      // Set background to white for better printing
+      const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+      rect.setAttribute('width', '100%');
+      rect.setAttribute('height', '100%');
+      rect.setAttribute('fill', 'white');
+      clonedSvg.insertBefore(rect, clonedSvg.firstChild);
+
+      // Convert SVG to data URL
+      const svgData = new XMLSerializer().serializeToString(clonedSvg);
+      const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+      const svgUrl = URL.createObjectURL(svgBlob);
+
+      // Create an image and convert to PNG
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const size = 400; // Higher resolution for printing
+        canvas.width = size;
+        canvas.height = size;
+        const ctx = canvas.getContext('2d');
+        
+        if (!ctx) {
+          alert('Erro ao criar contexto do canvas');
+          return;
+        }
+
+        // Fill white background
+        ctx.fillStyle = 'white';
+        ctx.fillRect(0, 0, size, size);
+        
+        // Draw the QR Code
+        ctx.drawImage(img, 0, 0, size, size);
+
+        // Convert to blob and download
+        canvas.toBlob((blob) => {
+          if (!blob) {
+            alert('Erro ao gerar imagem do QR Code');
+            return;
+          }
+
+          const pngUrl = URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = pngUrl;
+          link.download = `qr-code-${templateTitle.replace(/[^a-z0-9]/gi, '-').toLowerCase()}.png`;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          
+          // Clean up URLs
+          URL.revokeObjectURL(svgUrl);
+          URL.revokeObjectURL(pngUrl);
+        }, 'image/png');
+      };
+
+      img.onerror = () => {
+        alert('Erro ao gerar imagem do QR Code');
+        URL.revokeObjectURL(svgUrl);
+      };
+
+      img.src = svgUrl;
+    } catch (err) {
+      console.error('Erro ao baixar QR Code:', err);
+      alert('Erro ao baixar QR Code');
+    }
   };
 
   const getTypeIcon = (type: string) => {
@@ -385,6 +484,87 @@ export default function TemplatesPage() {
               ) : (
                 'Excluir'
               )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Share Dialog with QR Code */}
+      <Dialog open={shareDialogOpen} onOpenChange={setShareDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Share2 className="h-5 w-5" />
+              Compartilhar Template
+            </DialogTitle>
+            <DialogDescription>
+              Compartilhe este template através do link ou QR Code
+            </DialogDescription>
+          </DialogHeader>
+          {templateToShare && (
+            <div className="space-y-6 py-4">
+              {/* URL Section */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-gray-700">Link para compartilhar</label>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    readOnly
+                    value={`${window.location.origin}/view/${templateToShare.shareToken}`}
+                    className="flex-1 px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-sm"
+                  />
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleCopyUrl(`${window.location.origin}/view/${templateToShare.shareToken}`)}
+                  >
+                    <Copy size={16} className="mr-1" />
+                    Copiar
+                  </Button>
+                </div>
+              </div>
+
+              {/* QR Code Section */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                  <QrCode className="h-4 w-4" />
+                  QR Code
+                </label>
+                <div 
+                  ref={qrCodeRef}
+                  className="flex justify-center p-4 bg-white rounded-lg border border-gray-200" 
+                  data-qr-code
+                >
+                  <QRCodeSVG
+                    value={`${window.location.origin}/view/${templateToShare.shareToken}`}
+                    size={200}
+                    level="H"
+                    includeMargin={true}
+                  />
+                </div>
+                <div className="flex flex-col items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleDownloadQRCode(
+                      `${window.location.origin}/view/${templateToShare.shareToken}`,
+                      templateToShare.title
+                    )}
+                    className="w-full sm:w-auto"
+                  >
+                    <Download size={16} className="mr-2" />
+                    Baixar QR Code
+                  </Button>
+                  <p className="text-xs text-gray-500 text-center">
+                    Escaneie o QR Code para acessar o template ou baixe para imprimir
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShareDialogOpen(false)}>
+              Fechar
             </Button>
           </DialogFooter>
         </DialogContent>
