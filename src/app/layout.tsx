@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { Inter, Playfair_Display } from 'next/font/google';
+import { Analytics } from '@vercel/analytics/next';
 import './globals.css';
 import { AuthProvider } from '@/contexts/auth-context';
 import { Toaster } from '@/components/ui/toaster';
@@ -39,6 +40,7 @@ export default function RootLayout({
           {children}
           <Toaster />
         </AuthProvider>
+        <Analytics />
       </body>
     </html>
   );
